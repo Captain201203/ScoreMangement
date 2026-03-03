@@ -29,7 +29,7 @@ institutions. The system features a robust role-based access control architectur
   + Frontend: Next.js, React, TypeScript, Tailwind CSS
   + Backend: Node.js, Express, TypeScript
   + Database: MongoDB
-  + Authentication: JWT (JSON Web Token) / [Insert your specific method here]
+  + Authentication: JWT (JSON Web Token) 
 
 2. Local Installation
 2.1. Prerequisites
@@ -67,7 +67,7 @@ institutions. The system features a robust role-based access control architectur
 
 The application will be available at http://localhost:3000 (default Next.js port).
 
-----------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
 
 1. Tính năng chính
 - Đăng nhập: Xác thực người dùng dựa trên tài khoản được cấp.
@@ -95,7 +95,7 @@ The application will be available at http://localhost:3000 (default Next.js port
   + Frontend: Nextjs, React, Typescript, tailwindcss
   + Backend: Nodejs, Express, Typescript
   + Database: MongoDB
-  + Authentication: 
+  + Authentication: JWT (JSON Web Token) 
 
 2. Cài đặt cục bộ
 2.1. Yêu cầu hệ thống
