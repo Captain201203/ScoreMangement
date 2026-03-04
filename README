@@ -38,7 +38,7 @@ institutions. The system features a robust role-based access control architectur
 
 2.2 Installation Steps
 1. Clone the repository:
-- git clone https://github.com/Captain201203/HomeWorkManage.git
+- git clone https://github.com/Captain201203/ScoreManagement.git
 - cd HomeWorkManage
 
 2. Install Backend dependencies:
@@ -102,8 +102,8 @@ The application will be available at http://localhost:3000 (default Next.js port
 - Nodejs v22.19.0 hoặc phiên bản mới nhất
 
 2.2. Các bước cài đặt
-- Bước 1: # Clone dự án từ GitHub. git clone https://github.com/Captain201203/HomeWorkManage.git
-- Bước 2: # Di chuyển vào thư mục dự án. cd HomeWorkManage
+- Bước 1: # Clone dự án từ GitHub. git clone https://github.com/Captain201203/ScoreManagement.git
+- Bước 2: # Di chuyển vào thư mục dự án. cd ScoreManagement
 - Bước 3: # Cài đặt các thư viện cho backend. cd backend -> npm install
 - Bước 4: # Cài đặt các thư viện cho frontend. cd frontend -> npm install
 
