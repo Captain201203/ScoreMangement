@@ -11,6 +11,7 @@ import { subjectRouter } from './routes/subject/route.js';
 import { semesterRouter } from './routes/semester/route.js';
 import { scoreRouter } from './routes/score/route.js';
 import { authRouter } from './routes/auth/route.js';
+import { rbacRouter } from './routes/auth/rbacRoutes.js';
 
 
 // Load environment variables
@@ -41,6 +42,7 @@ app.use('/api/subjects', subjectRouter);
 app.use('/api/semesters', semesterRouter);
 app.use('/api/scores', scoreRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/rbac', rbacRouter);
 
 
 // Health check endpoint

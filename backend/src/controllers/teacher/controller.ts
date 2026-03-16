@@ -36,7 +36,7 @@ class TeacherController {
                 await accountService.createAutoAccountTeacher(
                     newTeacher.teacherEmail, 
                     newTeacher.teacherId, 
-                    'teacher' 
+                    
                 );
             }
             

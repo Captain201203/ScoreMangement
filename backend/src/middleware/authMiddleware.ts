@@ -2,9 +2,13 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// Cách đơn giản nhất: Định nghĩa Interface mở rộng ngay tại đây
 interface AuthenticatedRequest extends Request {
-    user?: any; // Hoặc chi tiết hơn: { id: string; role: string }
+    user?: {
+        id: string;
+        roleType: string;
+        roleName: string;
+        claims: string[];
+    }; 
 }
 
 export const verifyToken = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -12,34 +16,52 @@ export const verifyToken = (req: AuthenticatedRequest, res: Response, next: Next
     if (!token) return res.status(401).json({ message: "Bạn chưa đăng nhập" });
 
     try {
-        console.log("Token nhận được:", token);
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "SECRET_KEY") as any;
         
-        // Gán thông tin user vào request đã được mở rộng kiểu
+        // Lưu đầy đủ thông tin từ Claim-based Token vào req.user
         req.user = {
-            id: decoded.id,     // Đây là accountId/studentId
-            role: decoded.role  // 'admin', 'teacher', hoặc 'student'
+            id: decoded.id,    
+            roleType: decoded.roleType,
+            roleName: decoded.roleName,
+            claims: decoded.claims || []
         }; 
         
         next();
     } catch (error: any) {
-        console.error("Lỗi xác thực JWT:", error.message);
-        return res.status(403).json({ message: "Token không hợp lệ" });
+        return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
     }
 };
+export const authorizeClaim = (requiredClaim: string) => {
+    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        if (!req.user) return res.status(401).json({ message: "Yêu cầu xác thực" });
 
+        // Admin luôn có mọi quyền
+        if (req.user.roleType === 'admin') return next();
+
+        // Kiểm tra xem mã quyền có nằm trong mảng claims của user không
+        const hasPermission = req.user.claims.includes(requiredClaim);
+
+        if (!hasPermission) {
+            return res.status(403).json({ 
+                message: `Bạn không có quyền thực hiện hành động: ${requiredClaim}` 
+            });
+        }
+
+        next();
+    };
+};
 export const checkStudentOwnData = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    // Kiểm tra an toàn nếu req.user tồn tại
     if (!req.user) return res.status(401).json({ message: "Yêu cầu xác thực" });
 
-    // Nếu là admin thì cho qua
-    if (req.user.role === 'admin') return next();
+    // Admin hoặc Giảng viên có quyền 'score:view_all' thì cho qua
+    if (req.user.roleType === 'admin' || req.user.claims.includes('score:view_all')) {
+        return next();
+    }
 
-    // Nếu là sinh viên, bắt buộc studentId trong query phải khớp với ID trong Token
+    // Nếu là sinh viên, kiểm tra ID
     const queryStudentId = req.query.studentId as string;
-    
-    if (queryStudentId && queryStudentId !== req.user.id) {
-        return res.status(403).json({ message: "Bạn không có quyền xem điểm của người khác" });
+    if (req.user.roleType === 'student' && queryStudentId !== req.user.id) {
+        return res.status(403).json({ message: "Bạn không thể xem dữ liệu của sinh viên khác" });
     }
     
     next();

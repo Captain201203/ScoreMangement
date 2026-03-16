@@ -5,7 +5,7 @@ export interface ITeacher extends Document {
     teacherName: string;
     teacherEmail: string;
     teacherPhone: string;
-    position: string;
+   
 
 }
 
@@ -14,7 +14,7 @@ const TeacherSchema: Schema = new Schema({
     teacherName: { type: String, required: true },
     teacherEmail: { type: String, required: true },
     teacherPhone: { type: String, required: true },
-    position: { type: String, required: true },
+   
 });
 
 export default mongoose.models.Teacher || mongoose.model<ITeacher>('Teacher', TeacherSchema);

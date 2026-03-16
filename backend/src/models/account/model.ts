@@ -1,10 +1,11 @@
 import mongoose, {Document, Schema} from "mongoose";
+import { IRole } from "../role/model.js";
 
 export interface IAccount extends Document {
     accountId: string;
     username: string;
     password: string;
-    role: string;
+    role: mongoose.Types.ObjectId | IRole; // Trỏ tới Collection Role
 }
 
 const AccountSchema: Schema = new Schema({
@@ -12,11 +13,10 @@ const AccountSchema: Schema = new Schema({
     username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
     role: { 
-        type: String, 
-        required: true, 
-        enum: ['admin', 'teacher', 'student'], // Giới hạn quyền
-        default: 'student' 
+        type: Schema.Types.ObjectId, 
+        ref: 'Role', // Liên kết tới Role Model
+        required: true 
     },
-}, { timestamps: true }); // Thêm thời gian tạo/cập nhật
+}, { timestamps: true });
 
 export default mongoose.models.Account || mongoose.model<IAccount>('Account', AccountSchema);

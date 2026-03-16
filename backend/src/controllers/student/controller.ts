@@ -24,7 +24,7 @@ export class StudentController {
             await accountService.createAutoAccountStudent(
                 newStudent.email, 
                 newStudent.studentId, 
-                'student'
+             
             );
 
             return res.status(201).json(newStudent);

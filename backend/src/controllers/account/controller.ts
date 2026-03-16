@@ -74,18 +74,16 @@ export class AccountController{
 
     // Tạo tài khoản mới tự động
     async createAutoAccountStudent(req: Request, res: Response) {
-        try {
-            const { email, mssv, role } = req.body;
+    try {
+        const { email, mssv } = req.body; // Loại bỏ 'role' khỏi destructuring
 
-            // Kiểm tra ràng buộc dữ liệu đầu vào
-            if (!email || !mssv || !role) {
-                return res.status(400).json({ 
-                    error: 'Thiếu thông tin: email, mssv và role là bắt buộc.' 
-                });
-            }
+        if (!email || !mssv) {
+            return res.status(400).json({ error: 'Thiếu thông tin: email và mssv là bắt buộc.' });
+        }
 
-            const account = await this.accountService.createAutoAccountStudent(email, mssv, role);
-            res.status(201).json(account);
+        // Gọi service không cần truyền tham số role string nữa
+        const account = await this.accountService.createAutoAccountStudent(email, mssv);
+        res.status(201).json(account);
         } catch (error: any) {
             return res.status(500).json({ error: error.message });
         }
@@ -93,16 +91,11 @@ export class AccountController{
 
     async createAutoAccountAdmin(req: Request, res: Response) {
         try {
-            const { email, adminId, role } = req.body;
-
-            // Kiểm tra ràng buộc dữ liệu đầu vào
-            if (!email || !adminId || !role) {
-                return res.status(400).json({
-                    error: 'Thiếu thông tin: email, adminId và role là bắt buộc.'
-                });
+            const { email, adminId } = req.body;
+            if (!email || !adminId) {
+                return res.status(400).json({ error: 'Thiếu thông tin: email và adminId là bắt buộc.' });
             }
-
-            const account = await this.accountService.createAutoAccountAdmin(email, adminId, role);
+            const account = await this.accountService.createAutoAccountAdmin(email, adminId);
             res.status(201).json(account);
         } catch (error: any) {
             return res.status(500).json({ error: error.message });
@@ -111,16 +104,11 @@ export class AccountController{
 
     async createAutoAccountTeacher(req: Request, res: Response) {
         try {
-            const { teacherEmail, teacherId, role } = req.body;
-
-            // Kiểm tra ràng buộc dữ liệu đầu vào
-            if (!teacherEmail || !teacherId || !role) {
-                return res.status(400).json({
-                    error: 'Thiếu thông tin: email, teacherId và role là bắt buộc.'
-                });
+            const { teacherEmail, teacherId } = req.body;
+            if (!teacherEmail || !teacherId) {
+                return res.status(400).json({ error: 'Thiếu thông tin: teacherEmail và teacherId là bắt buộc.' });
             }
-
-            const account = await this.accountService.createAutoAccountTeacher(teacherEmail, teacherId, role);
+            const account = await this.accountService.createAutoAccountTeacher(teacherEmail, teacherId);
             res.status(201).json(account);
         } catch (error: any) {
             return res.status(500).json({ error: error.message });

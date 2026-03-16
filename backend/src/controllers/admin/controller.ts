@@ -24,7 +24,7 @@ export class AdminController {
                 await accountService.createAutoAccountAdmin(
                     newAdmin.email, 
                     newAdmin.adminId, 
-                    'admin'
+                   
                 );
             }
             
