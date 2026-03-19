@@ -1,18 +1,20 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { studentRouter } from './routes/student/route.js';
-import { classRouter } from './routes/class/route.js';
-import { adminRouter } from './routes/admin/route.js';
-import { teacherRouter } from './routes/teacher/route.js';
-import { majorRouter } from './routes/major/route.js';
-import { accountRouter } from './routes/account/route.js';
-import { subjectRouter } from './routes/subject/route.js';
-import { semesterRouter } from './routes/semester/route.js';
-import { scoreRouter } from './routes/score/route.js';
-import { authRouter } from './routes/auth/route.js';
-import { rbacRouter } from './routes/auth/rbacRoutes.js';
 
+// Import các Controller (Thay thế hoàn toàn cho các Router cũ)
+import { studentController } from './Controllers/StudentController.js';
+import { classController } from './Controllers/ClassController.js';
+import { adminController } from './Controllers/AdminController.js';
+import { teacherController } from './Controllers/TeacherController.js';
+import { majorController } from './Controllers/MajorController.js';
+import { accountController } from './Controllers/AccountController.js';
+import { subjectController } from './Controllers/SubjectController.js';
+import { semesterController } from './Controllers/SemesterController.js';
+import { scoreController } from './Controllers/ScoreController.js';
+import { authController } from './Controllers/AuthController.js';
+import { roleController } from './Controllers/RoleController.js';
+import { claimController } from './Controllers/ClaimController.js';
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +26,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Cấu trúc ngăn chặn Cache cho API
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -31,19 +34,22 @@ app.use((req, res, next) => {
     next();
 });
 
-// Routes
-app.use('/api/students', studentRouter);
-app.use('/api/classes', classRouter);
-app.use('/api/admins', adminRouter);
-app.use('/api/teachers', teacherRouter);
-app.use('/api/majors', majorRouter);
-app.use('/api/accounts', accountRouter);
-app.use('/api/subjects', subjectRouter);
-app.use('/api/semesters', semesterRouter);
-app.use('/api/scores', scoreRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/rbac', rbacRouter);
+// --- Routes ---
+// Mỗi controller hiện tại đã tự quản lý router và middleware của chính nó
+app.use('/api/auth', authController.router);
+app.use('/api/accounts', accountController.router);
+app.use('/api/students', studentController.router);
+app.use('/api/teachers', teacherController.router);
+app.use('/api/admins', adminController.router);
+app.use('/api/classes', classController.router);
+app.use('/api/majors', majorController.router);
+app.use('/api/subjects', subjectController.router);
+app.use('/api/semesters', semesterController.router);
+app.use('/api/scores', scoreController.router);
 
+// RBAC Routes (Đã được gộp vào Claim và Role Controller)
+app.use('/api/roles', roleController.router);
+app.use('/api/claims', claimController.router);
 
 // Health check endpoint
 app.get('/health', (req: Request, res: Response) => {
@@ -57,8 +63,10 @@ app.use((req: Request, res: Response) => {
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error('🔥 Server Error:', err);
+    res.status(err.status || 500).json({ 
+        message: err.message || 'Internal server error' 
+    });
 });
 
 export default app;
