@@ -47,30 +47,29 @@ function ScoreInputFormContent() {
     loadData()
   }, [semester, major, subject, classId, studentId])
 
+
+
+// src/app/page/scores/input/form/page.tsx
+
   const loadData = async () => {
-    try {
-      setLoading(true)
-      const [studentData, subjectDataResult, allScores] = await Promise.all([
-        studentService.getById(studentId!),
-        subjectService.getById(subject!),
-        scoreService.getAll() // Hoặc scoreService.getByClass(classId!) nếu có
-      ])
-      
-      setStudent(studentData)
-      setSubjectData(subjectDataResult)
+      try {
+          setLoading(true);
+          // Lọc theo studentId và subjectId là chính xác nhất
+          const res = await scoreService.getAll({ 
+              studentId: studentId!, 
+              subjectId: subject! 
+          });
 
-      // Lọc danh sách điểm thuộc lớp và môn học hiện tại
-      const filteredScores = Array.isArray(allScores) 
-        ? allScores.filter(s => s.className === classId && s.subjectId === subject)
-        : []
-      setScoresList(filteredScores)
-
-    } catch (err: any) {
-      setError("Không thể tải dữ liệu. Vui lòng kiểm tra lại.")
-    } finally {
-      setLoading(false)
-    }
-  }
+          console.log("📊 Dữ liệu thực tế từ API:", res);
+          
+          // res của bạn đã là mảng data nhờ hàm getAll ở Frontend Service
+          setScoresList(Array.isArray(res) ? res : []);
+      } catch (err) {
+          setError("Lỗi tải dữ liệu");
+      } finally {
+          setLoading(false);
+      }
+  };
 
   const handleEdit = (score: IScore) => {
     setEditingScoreId(score._id || null)
@@ -91,33 +90,36 @@ function ScoreInputFormContent() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    try {
-      const scoreData: Partial<IScore> = {
-        studentId: student?.studentId,
-        subjectId: subject!,
-        subjectName: subjectData?.subjectName,
-        className: classId!,
-        semester: semester!,
-        ex1Score: parseFloat(ex1Score),
-        ex2Score: parseFloat(ex2Score),
-        examScore: parseFloat(examScore),
-      }
+// src/app/page/scores/input/page.tsx
 
-      await scoreService.upsertScore(scoreData)
-      alert(editingScoreId ? "Cập nhật thành công!" : "Lưu điểm thành công!")
-      
-      // Reset form
-      setEx1Score(""); setEx2Score(""); setExamScore(""); setEditingScoreId(null)
-      loadData()
-    } catch (err) {
-      setError("Lỗi khi lưu điểm")
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setSubmitting(true);
+      try {
+          const scoreData = {
+              studentId: studentId!.trim(),
+              subjectId: subject!.trim(),
+              semester: semester!.trim(),
+              className: decodeURIComponent(classId!).trim(), // Gửi className sạch
+              ex1Score: parseFloat(ex1Score) || 0,
+              ex2Score: parseFloat(ex2Score) || 0,
+              examScore: parseFloat(examScore) || 0,
+          };
+
+          await scoreService.upsertScore(scoreData);
+          
+          // Quan trọng: Chờ 300ms để Database Index kịp cập nhật (đặc biệt nếu dùng MongoDB Atlas)
+          await new Promise(resolve => setTimeout(resolve, 300));
+
+          setEx1Score(""); setEx2Score(""); setExamScore("");
+          await loadData(); 
+          alert("Lưu điểm thành công!");
+      } catch (err) {
+          setError("Lỗi lưu điểm");
+      } finally {
+          setSubmitting(false);
+      }
+  };
 
   if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin text-teal-600" /></div>
 

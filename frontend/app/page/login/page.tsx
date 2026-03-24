@@ -20,39 +20,43 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-        // Nếu người dùng nhấn nút "Tiến tới" nhưng Token không tồn tại
-        const token = localStorage.getItem("token");
-        if (!token) {
-            // Ép buộc ở lại trang login và xóa lịch sử các trang trước đó
-            window.history.pushState(null, "", window.location.href);
-            window.onpopstate = function () {
-                window.history.go(1);
-            };
-        }
-    }, []);
+      const token = localStorage.getItem("token");
+      if (!token) {
+          // Logic chặn popstate này đôi khi làm rối loạn router của Next.js
+          window.history.pushState(null, "", window.location.href);
+          window.onpopstate = function () {
+              window.history.go(1);
+          };
+      }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+        e.preventDefault();
+        setLoading(true);
+        setError("");
 
-    try {
-      const response = await authService.login({ username, password });
-      
-      // Phân quyền điều hướng dựa trên Role
-      if (response.user.role === 'admin') {
-        router.push("/page/dashboard"); // Chuyển hướng đến trang Dashboard
-      } else if (response.user.role === 'student') {
-        router.push("/page/studentPage/dashboard");
-      } else {
-        router.push("/page/scores/input/semester");
+      try {
+          const response = await authService.login({ username, password });
+          
+          if (response && response.token) {
+              const role = response.user.role;
+              
+              // Ép buộc trình duyệt tải lại toàn bộ để Middleware đọc Cookie mới nhất
+              if (role === 'admin') {
+                  window.location.href = "/page/dashboard";
+              } else if (role === 'student') {
+                  // Đảm bảo đường dẫn này khớp chính xác với thư mục của bạn
+                  window.location.href = "/page/studentPage/dashboard";
+              } else {
+                  window.location.href = "/page/scores/input/semester";
+              }
+          }
+      } catch (err: any) {
+          setError("Tài khoản hoặc mật khẩu không chính xác");
+      } finally {
+          setLoading(false);
       }
-    } catch (err: any) {
-      setError("Tài khoản hoặc mật khẩu không chính xác");
-    } finally {
-      setLoading(false)
-    }
-  }
+    };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">

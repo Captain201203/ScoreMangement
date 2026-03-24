@@ -1,51 +1,30 @@
+// src/app/service/teacher/service.ts
 import { ITeacher } from "@/app/types/teacher/type";
 import { BaseApiService } from "../baseApi/service";
 
 class TeacherService extends BaseApiService {
-
     constructor() {
         super('teachers');
-
     }
 
     public async getAll(): Promise<ITeacher[]> {
-        const res = await fetch(this.endpoint, {
-            cache: 'no-store',
-            method: 'GET'
-        });
-        return this.handleResponse<ITeacher[]>(res);
+        return this.apiRequest<ITeacher[]>('GET');
     }
 
     public async getById(teacherId: string): Promise<ITeacher> {
-        const res = await fetch(`${this.endpoint}/${teacherId}`, {
-            method: 'GET'
-        });
-        return this.handleResponse<ITeacher>(res);
+        return this.apiRequest<ITeacher>('GET', `/${teacherId}`);
     }
 
     public async create(data: Omit<ITeacher, '_id'>): Promise<ITeacher> {
-        const res = await fetch(this.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        return this.handleResponse<ITeacher>(res);
+        return this.apiRequest<ITeacher>('POST', '', data);
     }
 
     public async update(teacherId: string, data: Partial<ITeacher>): Promise<ITeacher> {
-        const res = await fetch(`${this.endpoint}/${teacherId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        });
-        return this.handleResponse<ITeacher>(res);
+        return this.apiRequest<ITeacher>('PUT', `/${teacherId}`, data);
     }
 
     public async delete(teacherId: string): Promise<{ success: boolean; message?: string }> {
-        const res = await fetch(`${this.endpoint}/${teacherId}`, {
-            method: 'DELETE'
-        });
-        return this.handleResponse(res);
+        return this.apiRequest<{ success: boolean; message?: string }>('DELETE', `/${teacherId}`);
     }
 }
 
