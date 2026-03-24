@@ -3,7 +3,7 @@ import StudentModel, { IStudent } from "../Entity/StudentEntity.js";
 
 export class StudentRepository {
     async findAll(): Promise<IStudent[]> {
-        // Lưu ý: classId là string nên ta không dùng populate nếu Entity không khai báo ref
+      
         return await StudentModel.find().exec();
     }
 

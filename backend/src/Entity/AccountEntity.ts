@@ -1,11 +1,11 @@
 import mongoose, {Document, Schema} from "mongoose";
-import { IRole } from "../Entity/RoleEntity.js"; // Import interface Role mới
+import { IRole } from "../Entity/RoleEntity.js"; 
 
 export interface IAccount extends Document {
     accountId: string;
     username: string;
     password: string;
-    role: mongoose.Types.ObjectId | IRole; // Trỏ tới Collection Role
+    role: mongoose.Types.ObjectId | IRole; 
 }
 
 const AccountSchema: Schema = new Schema({
@@ -14,7 +14,7 @@ const AccountSchema: Schema = new Schema({
     password: { type: String, required: true },
     role: { 
         type: Schema.Types.ObjectId, 
-        ref: 'Role', // Liên kết tới Role Model
+        ref: 'Role',
         required: true 
     },
 }, { timestamps: true });

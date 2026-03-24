@@ -12,11 +12,11 @@ export class SemesterService {
     }
 
     async create(data: any): Promise<ISemester> {
-        // 1. Kiểm tra tồn tại
+     
         const existSemester = await semesterRepository.findBySemesterId(data.semesterId);
         if (existSemester) throw new Error("Semester already exists");
 
-        // 2. Kiểm tra logic ngày tháng
+     
         const start = new Date(data.startDate);
         const end = new Date(data.endDate);
         if (start >= end) {

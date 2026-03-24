@@ -1,9 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IRole extends Document {
-    roleName: string;    // "Giảng viên bộ môn", "Trưởng khoa", "Sinh viên"
-    roleType: string;    // 'admin' | 'teacher' | 'student' (để giữ logic cũ của bạn)
-    claims: mongoose.Types.ObjectId[]; // Tham chiếu tới các Claim
+    roleName: string;    
+    roleType: string;    
+    claims: mongoose.Types.ObjectId[]; 
 }
 
 const RoleSchema = new Schema({

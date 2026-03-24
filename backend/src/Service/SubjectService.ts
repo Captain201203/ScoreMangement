@@ -17,13 +17,13 @@ export class SubjectService {
     }
 
     async create(data: any): Promise<ISubject> {
-        // 1. Kiểm tra môn học tồn tại
+   
         const existSubject = await subjectRepository.findById(data.subjectId);
         if (existSubject) {
             throw new Error("Subject already exists");
         }
 
-        // 2. Kiểm tra Chuyên ngành tồn tại
+    
         const major = await MajorModel.findOne({ majorName: data.majorName });
         if (!major) {
             throw new Error("Major not found");

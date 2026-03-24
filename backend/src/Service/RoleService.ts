@@ -8,7 +8,7 @@ export class RoleService {
     }
 
     async create(data: Partial<IRole>): Promise<IRole> {
-        // Kiểm tra xem roleType đã tồn tại chưa nếu cần thiết
+      
         return await roleRepository.create(data);
     }
 

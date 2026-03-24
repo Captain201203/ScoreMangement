@@ -23,8 +23,8 @@ const ScoreSchema: Schema = new Schema({
   className: { type: String, index: true },
   ex1Score: { type: Number, required: true, min: 0, max: 10 },
   ex2Score: { type: Number, required: true, min: 0, max: 10 },
-  examScore: { type: Number, required: true, min: 0, max: 10 }, // Điểm thi đầu vào
-  finalScore: { type: Number, default: 0 }, // Sẽ được ghi đè bởi pre-save
+  examScore: { type: Number, required: true, min: 0, max: 10 }, 
+  finalScore: { type: Number, default: 0 }, 
   GPA: { type: Number, min: 0, max: 4 },
   letterGrade: { type: String, enum: ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'F'] },
   semester: { type: String, required: true },

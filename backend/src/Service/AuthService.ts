@@ -1,5 +1,5 @@
 // src/Service/AuthService.ts
-import { accountRepository } from "../Repository/AccountRepository.js"; // Dùng Repo thay vì Model
+import { accountRepository } from "../Repository/AccountRepository.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { IRole } from "../Entity/RoleEntity.js";
@@ -7,7 +7,7 @@ import { IClaim } from "../Entity/ClaimEntity.js";
 
 export class AuthService {
     async login(username: string, password: string) {
-        // 1. Dùng Repository để tìm tài khoản (Repo đã có logic populate sẵn)
+       
         const account = await accountRepository.findByUsername(username);
 
         if (!account) {
@@ -19,12 +19,18 @@ export class AuthService {
         if (!isMatch) {
             throw new Error("Mật khẩu không chính xác");
         }
+        
 
-        // 3. Chuẩn bị dữ liệu (Lúc này account.role đã được Repo populate)
+    
         const roleData = account.role as unknown as IRole;
         const claims = (roleData.claims as unknown as IClaim[]).map(c => c.slug);
 
-        // 4. Tạo JWT
+        const secret = process.env.JWT_SECRET;
+        
+        if (!secret) {
+            console.error("❌ LỖI NGHIÊM TRỌNG: JWT_SECRET chưa được cấu hình trong .env");
+            throw new Error("Lỗi cấu hình hệ thống (Server missing Secret Key)");
+        }
         const token = jwt.sign(
             { 
                 id: account.accountId, 

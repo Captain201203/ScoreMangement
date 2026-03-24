@@ -19,7 +19,13 @@ export class ScoreController {
         this.router.get("/:id", (req, res) => this.getById(req, res));
 
         // Nhập và sửa điểm (Thường sẽ cần thêm authorizeClaim('teacher') ở đây)
-        this.router.post("/", (req, res) => this.create(req, res));
+        this.router.get("/", (req: any, res, next) => {
+            if (req.user.roleType === 'student') {
+                return checkStudentOwnData(req, res, next);
+            }
+            next(); // Nếu là Admin/Teacher thì cho qua luôn để họ xem được điểm lớp
+        }, (req, res) => this.getAll(req, res));
+        
         this.router.put("/:id", (req, res) => this.update(req, res));
         this.router.delete("/:id", (req, res) => this.remove(req, res));
     }

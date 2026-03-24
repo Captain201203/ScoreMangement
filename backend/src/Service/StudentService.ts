@@ -17,13 +17,13 @@ export class StudentService {
     }
 
     async create(data: any): Promise<IStudent> {
-        // 1. Kiểm tra lớp học tồn tại
+    
         const targetClass = await ClassModel.findOne({ classId: data.classId });
         if (!targetClass) {
             throw new Error("Lớp học không tồn tại, không thể thêm sinh viên.");
         }
 
-        // 2. Kiểm tra mã sinh viên duy nhất
+    
         const existing = await studentRepository.findByStudentId(data.studentId);
         if (existing) {
             throw new Error("Mã sinh viên đã tồn tại.");

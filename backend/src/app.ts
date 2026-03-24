@@ -1,8 +1,9 @@
+import dotenv from 'dotenv';
+dotenv.config(); 
+
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 
-// Import các Controller (Thay thế hoàn toàn cho các Router cũ)
 import { studentController } from './Controllers/StudentController.js';
 import { classController } from './Controllers/ClassController.js';
 import { adminController } from './Controllers/AdminController.js';
@@ -16,17 +17,17 @@ import { authController } from './Controllers/AuthController.js';
 import { roleController } from './Controllers/RoleController.js';
 import { claimController } from './Controllers/ClaimController.js';
 
-// Load environment variables
-dotenv.config();
+
+
 
 const app: Express = express();
 
-// Middleware
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Cấu trúc ngăn chặn Cache cho API
+
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -34,8 +35,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- Routes ---
-// Mỗi controller hiện tại đã tự quản lý router và middleware của chính nó
+
 app.use('/api/auth', authController.router);
 app.use('/api/accounts', accountController.router);
 app.use('/api/students', studentController.router);
@@ -47,21 +47,21 @@ app.use('/api/subjects', subjectController.router);
 app.use('/api/semesters', semesterController.router);
 app.use('/api/scores', scoreController.router);
 
-// RBAC Routes (Đã được gộp vào Claim và Role Controller)
+
 app.use('/api/roles', roleController.router);
 app.use('/api/claims', claimController.router);
 
-// Health check endpoint
+
 app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({ message: 'API is running' });
 });
 
-// 404 handler
+
 app.use((req: Request, res: Response) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handling middleware
+
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('🔥 Server Error:', err);
     res.status(err.status || 500).json({ 

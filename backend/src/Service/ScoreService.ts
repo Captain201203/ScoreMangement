@@ -6,8 +6,12 @@ import SubjectModel from "../Entity/SubjectEntity.js";
 import SemesterModel from "../Entity/SemesterEntity.js";
 
 export class ScoreService {
+// src/Service/ScoreService.ts
+
     async createScore(data: any): Promise<IScore> {
-        const { studentId, subjectId, semester } = data;
+        const studentId = data.studentId?.trim();
+        const subjectId = data.subjectId?.trim();
+        const semester = data.semester?.trim();
 
         const [student, subject, semesterExists] = await Promise.all([
             StudentModel.findOne({ studentId }),
@@ -21,14 +25,23 @@ export class ScoreService {
 
         let score = await scoreRepository.findOne({ studentId, subjectId, semester });
 
+        // TẠO OBJECT DỮ LIỆU SẠCH
+        const cleanData = {
+            ...data, // Lấy các điểm số từ client gửi lên
+            studentId,
+            subjectId,
+            semester,
+            // ÉP BUỘC LẤY TỪ DATABASE CỦA STUDENT VÀ SUBJECT
+            className: student.className.trim(), 
+            subjectName: subject.subjectName.trim()
+        };
+
         if (score) {
-            return await scoreRepository.update(score._id as string, data) as IScore;
+            // Cập nhật bản ghi cũ
+            return await scoreRepository.update(score._id as string, cleanData) as IScore;
         } else {
-            return await scoreRepository.create({
-                ...data,
-                subjectName: subject.subjectName,
-                className: student.className,
-            });
+            // Tạo bản ghi mới hoàn toàn
+            return await scoreRepository.create(cleanData);
         }
     }
 

@@ -1,9 +1,18 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') }); 
+
+
+console.log("🔑 Kiểm tra JWT_SECRET tại server.ts:", process.env.JWT_SECRET ? "ĐÃ CÓ GIÁ TRỊ" : "TRỐNG (UNDEFINED)");
+
 import app from './app.js';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 const PORT = process.env.PORT;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/HomeWorkManager';

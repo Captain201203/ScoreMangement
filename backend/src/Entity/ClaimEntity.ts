@@ -1,8 +1,8 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IClaim extends Document {
-    name: string;        // Tên hiển thị: "Sửa điểm", "Xem danh sách lớp"
-    slug: string;        // Mã định danh: "score:update", "class:view"
+    name: string;        
+    slug: string;        
     description: string;
 }
 

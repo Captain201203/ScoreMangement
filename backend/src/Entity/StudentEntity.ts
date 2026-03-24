@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-// Giả sử IClass đã được định nghĩa ở file khác
+
 export interface IStudent extends Document {
     studentId: string;
     studentName: string;
@@ -21,5 +21,5 @@ const StudentSchema: Schema = new Schema({
     }
 });
 
-// Xuất model
+
 export default mongoose.models.Student || mongoose.model<IStudent>('Student', StudentSchema);
