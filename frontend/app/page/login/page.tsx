@@ -1,7 +1,6 @@
-// src/app/login/page.tsx
 "use client"
 
-import { use, useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { authService } from "@/app/service/auth/service"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,8 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Loader2, Lock, User, AlertCircle } from "lucide-react"
-import { useEffect } from "react";
-
 
 export default function LoginPage() {
   const [username, setUsername] = useState("")
@@ -20,43 +17,82 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-          // Logic chặn popstate này đôi khi làm rối loạn router của Next.js
-          window.history.pushState(null, "", window.location.href);
-          window.onpopstate = function () {
-              window.history.go(1);
-          };
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.history.pushState(null, "", window.location.href);
+      window.onpopstate = function () {
+        window.history.go(1);
+      };
+    }
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
+  // Hàm kiểm tra định dạng email bằng Regex
+  const validateEmail = (email: string) => {
+    return String(email)
+      .toLowerCase()
+      .match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/);
+  };
 
-      try {
-          const response = await authService.login({ username, password });
-          
-          if (response && response.token) {
-              const role = response.user.role;
-              
-              // Ép buộc trình duyệt tải lại toàn bộ để Middleware đọc Cookie mới nhất
-              if (role === 'admin') {
-                  window.location.href = "/page/dashboard";
-              } else if (role === 'student') {
-                  // Đảm bảo đường dẫn này khớp chính xác với thư mục của bạn
-                  window.location.href = "/page/studentPage/dashboard";
-              } else {
-                  window.location.href = "/page/scores/input/semester";
-              }
-          }
-      } catch (err: any) {
-          setError("Tài khoản hoặc mật khẩu không chính xác");
-      } finally {
-          setLoading(false);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    // 1. Kiểm tra để trống trường Email hoặc Mật khẩu
+    if (!username.trim() || !password.trim()) {
+      setError("Vui lòng nhập đầy đủ Email và Mật khẩu.");
+      return;
+    }
+
+    // 2. Kiểm tra định dạng Email (thiếu @, thiếu tên miền...)
+    if (!validateEmail(username)) {
+      setError("Email không đúng định dạng (ví dụ: example@domain.com).");
+      return;
+    }
+
+    // 3. Kiểm tra số lượng ký tự Email (6-50 ký tự theo yêu cầu)
+    if (username.length < 6 || username.length > 50) {
+      setError("Email phải từ 6 đến 50 ký tự.");
+      return;
+    }
+
+    // 4. Kiểm tra số lượng ký tự Mật khẩu (6-30 ký tự theo yêu cầu hệ thống)
+    if (password.length < 6 || password.length > 30) {
+      setError("Mật khẩu phải từ 6 đến 30 ký tự.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await authService.login({ username, password });
+
+      if (response && response.token) {
+        const role = response.user.role;
+        
+        // Điều hướng sau khi xác thực thành công (6-30 ký tự pass thỏa mãn)
+        if (role === 'admin') {
+          window.location.href = "/page/dashboard";
+        } else if (role === 'student') {
+          window.location.href = "/page/studentPage/dashboard";
+        } else {
+          window.location.href = "/page/scores/input/semester";
+        }
       }
-    };
+    } catch (err: any) {
+      // Xử lý các lỗi từ Backend (Tài khoản không tồn tại, sai mật khẩu)
+      const message = err.response?.data?.message || "";
+      
+      if (message.includes("not found") || message.includes("tồn tại")) {
+        setError("Tài khoản Email không tồn tại trong hệ thống.");
+      } else if (message.includes("password") || message.includes("mật khẩu")) {
+        setError("Email đúng nhưng Mật khẩu sai.");
+      } else {
+        setError("Tài khoản hoặc mật khẩu không chính xác.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
@@ -66,10 +102,10 @@ export default function LoginPage() {
           <p className="text-sm text-muted-foreground font-medium">Hệ thống Quản lý & Xem điểm trực tuyến</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" noValidate>
             {error && (
-              <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 font-medium">
-                <AlertCircle className="h-4 w-4" />
+              <div className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20 font-medium animate-in fade-in zoom-in duration-200">
+                <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
             )}
@@ -81,11 +117,10 @@ export default function LoginPage() {
                 <Input 
                   id="username" 
                   type="email"
-                  placeholder="vuan@gmail.com" 
-                  className="pl-10 focus-visible:ring-teal-500"
+                  placeholder="example@gmail.com" 
+                  className={`pl-10 focus-visible:ring-teal-500 ${error.includes("Email") ? "border-destructive" : ""}`}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required
                 />
               </div>
             </div>
@@ -97,11 +132,10 @@ export default function LoginPage() {
                 <Input 
                   id="password" 
                   type="password" 
-                  placeholder="Mã số sinh viên"
-                  className="pl-10 focus-visible:ring-teal-500"
+                  placeholder="Nhập mật khẩu"
+                  className={`pl-10 focus-visible:ring-teal-500 ${error.includes("Mật khẩu") ? "border-destructive" : ""}`}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
               </div>
             </div>
