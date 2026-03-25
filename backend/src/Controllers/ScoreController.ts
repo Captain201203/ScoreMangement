@@ -14,19 +14,24 @@ export class ScoreController {
     private initializeRoutes() {
         this.router.use(verifyToken); // Tất cả các API điểm cần login
 
-        // Sinh viên chỉ xem được điểm của mình (nhờ checkStudentOwnData)
-        this.router.get("/", checkStudentOwnData, (req, res) => this.getAll(req, res));
-        this.router.get("/:id", (req, res) => this.getById(req, res));
-
-        // Nhập và sửa điểm (Thường sẽ cần thêm authorizeClaim('teacher') ở đây)
+        // 1. LẤY DANH SÁCH ĐIỂM (GET /) - Đã gộp logic check quyền
         this.router.get("/", (req: any, res, next) => {
             if (req.user.roleType === 'student') {
                 return checkStudentOwnData(req, res, next);
             }
-            next(); // Nếu là Admin/Teacher thì cho qua luôn để họ xem được điểm lớp
+            next(); 
         }, (req, res) => this.getAll(req, res));
-        
+
+        // 2. TẠO MỚI ĐIỂM (POST /) - DÒNG NÀY BẠN ĐANG THIẾU
+        this.router.post("/", (req, res) => this.create(req, res));
+
+        // 3. LẤY CHI TIẾT (GET /:id)
+        this.router.get("/:id", (req, res) => this.getById(req, res));
+
+        // 4. CẬP NHẬT (PUT /:id)
         this.router.put("/:id", (req, res) => this.update(req, res));
+
+        // 5. XÓA (DELETE /:id)
         this.router.delete("/:id", (req, res) => this.remove(req, res));
     }
 

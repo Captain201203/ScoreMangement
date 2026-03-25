@@ -32,7 +32,7 @@ export class ScoreService {
             subjectId,
             semester,
             // ÉP BUỘC LẤY TỪ DATABASE CỦA STUDENT VÀ SUBJECT
-            className: student.className.trim(), 
+            className: (student.className || "").toString().trim(),
             subjectName: subject.subjectName.trim()
         };
 
