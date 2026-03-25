@@ -1,6 +1,8 @@
 // src/Controllers/AuthController.ts
 import { Router, Request, Response } from "express";
 import { authService } from "../Service/AuthService.js";
+import Account from "../Entity/AccountEntity.js"; // Import Model Account của bạn
+import bcrypt from "bcryptjs"; // Đảm bảo dùng đúng thư viện hash của dự án
 
 export class AuthController {
     public router: Router;
@@ -12,7 +14,10 @@ export class AuthController {
 
     private initializeRoutes() {
         this.router.post('/login', (req, res) => this.login(req, res));
+        
     }
+
+    
 
     private async login(req: Request, res: Response) {
         try {
