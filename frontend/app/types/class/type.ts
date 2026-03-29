@@ -3,5 +3,6 @@ export interface IClass{
     classId: string;
     majorName: string;
     teacherName: string;
+    teacherId: string; // ✨ Thêm trường này để phân quyền chính xác
 
 }

@@ -1,4 +1,4 @@
-// src/Controllers/ScoreController.ts
+
 import { Router, Request, Response } from "express";
 import { scoreService } from "../Service/ScoreService.js";
 import { verifyToken, checkStudentOwnData } from "../middleware/authMiddleware.js";

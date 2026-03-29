@@ -5,7 +5,7 @@ export abstract class BaseApiService {
     protected readonly endpoint: string;
 
     constructor(resource: string) {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        const apiBase = process.env.NEXT_LOCAL_API_URL || 'http://localhost:3001';
         this.endpoint = `${apiBase}/api/${resource}`;
     }
 

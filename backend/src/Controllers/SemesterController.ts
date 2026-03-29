@@ -1,4 +1,4 @@
-// src/Controllers/SemesterController.ts
+
 import { Router, Request, Response } from "express";
 import { semesterService } from "../Service/SemesterService.js";
 import { verifyToken, authorizeClaim } from "../middleware/authMiddleware.js";

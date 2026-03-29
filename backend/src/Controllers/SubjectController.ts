@@ -1,4 +1,4 @@
-// src/Controllers/SubjectController.ts
+
 import { Router, Request, Response } from "express";
 import { subjectService } from "../Service/SubjectService.js";
 import { verifyToken, authorizeClaim } from "../middleware/authMiddleware.js";

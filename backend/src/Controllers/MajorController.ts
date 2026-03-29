@@ -1,4 +1,4 @@
-// src/Controllers/MajorController.ts
+
 import { Router, Request, Response } from "express";
 import { majorService } from "../Service/MajorService.js";
 import { verifyToken, authorizeClaim } from "../middleware/authMiddleware.js";

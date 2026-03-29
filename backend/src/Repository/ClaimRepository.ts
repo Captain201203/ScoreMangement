@@ -15,6 +15,10 @@ export class ClaimRepository {
         return await claim.save();
     }
 
+    async update(id: string, data: Partial<IClaim>): Promise<IClaim | null> {
+        return await ClaimModel.findByIdAndUpdate(id, data, { new: true }).exec();
+    }
+
     async delete(id: string): Promise<IClaim | null> {
         return await ClaimModel.findByIdAndDelete(id).exec();
     }

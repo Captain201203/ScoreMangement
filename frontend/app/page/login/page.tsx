@@ -63,20 +63,37 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    try {
+  try {
+      // 💡 BƯỚC QUAN TRỌNG: Xóa sạch dấu vết của User cũ trước khi Login mới
+      localStorage.clear(); 
+
       const response = await authService.login({ username, password });
 
       if (response && response.token) {
-        const role = response.user.role;
-        
-        // Điều hướng sau khi xác thực thành công (6-30 ký tự pass thỏa mãn)
-        if (role === 'admin') {
-          window.location.href = "/page/dashboard";
-        } else if (role === 'student') {
-          window.location.href = "/page/studentPage/dashboard";
-        } else {
-          window.location.href = "/page/scores/input/semester";
-        }
+          // Ép kiểu về string bằng cách thêm || "" (hoặc String() nếu cần)
+          localStorage.setItem("token", response.token);
+          
+          // Sử dụng toán tử ?? hoặc || để đảm bảo luôn là chuỗi
+          localStorage.setItem("user_role", (response.roleType || response.user?.role) ?? "");
+          
+          // claims đã có JSON.stringify nên thường sẽ ra chuỗi "[]", nhưng cứ thêm check cho chắc
+          localStorage.setItem("user_claims", JSON.stringify(response.claims || []));
+          
+          localStorage.setItem("user_username", response.username ?? "");
+
+          const roleType = response.roleType || response.user?.role;
+
+        // 💡 SỬ DỤNG router.push HOẶC ĐỢI 1 CHÚT TRƯỚC KHI location.href
+        // Để đảm bảo IO của LocalStorage đã xong
+        setTimeout(() => {
+          if (roleType === 'admin') {
+            window.location.href = "/page/dashboard";
+          } else if (roleType === 'student') {
+            window.location.href = "/page/studentPage/dashboard";
+          } else {
+            window.location.href = "/page/scores/input/semester";
+          }
+        }, 100); 
       }
     } catch (err: any) {
       // Xử lý các lỗi từ Backend (Tài khoản không tồn tại, sai mật khẩu)

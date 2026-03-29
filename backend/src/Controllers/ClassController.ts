@@ -1,4 +1,4 @@
-// src/Controllers/ClassController.ts
+
 import { Router, Request, Response } from "express";
 import { classService } from "../Service/ClassService.js";
 import { verifyToken, authorizeClaim } from "../middleware/authMiddleware.js";
@@ -26,7 +26,12 @@ export class ClassController {
 
     private async getAll(req: Request, res: Response) {
         try {
-            const classes = await classService.getAll();
+            // Lấy thông tin user từ req (do verifyToken cung cấp)
+            const user = (req as any).user; 
+
+            // Truyền user xuống service để thực hiện logic lọc
+            const classes = await classService.getAll(user);
+            
             res.status(200).json(classes);
         } catch (error: any) {
             res.status(500).json({ message: error.message });

@@ -41,15 +41,17 @@ export class AuthService {
             { expiresIn: "1d" }
         );
 
-        return {
-            token,
-            user: {
-                username: account.username,
-                role: roleData.roleType,
-                accountId: account.accountId,
-                permissions: claims
-            }
-        };
+    return {
+        token,
+        username: account.username, // Phẳng hóa dữ liệu ra ngoài cho dễ đọc
+        roleType: roleData.roleType,
+        claims: claims, // <--- Đổi tên từ 'permissions' thành 'claims'
+        user: {
+            username: account.username,
+            role: roleData.roleType,
+            accountId: account.accountId,
+        }
+    };
     }
 }
 

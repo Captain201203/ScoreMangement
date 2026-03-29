@@ -66,8 +66,8 @@ export default function MajorFormPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <main className="flex-1 md:ml-64 p-8">
+      
+      <main className="flex-1  p-8">
         <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link href="/majors">Majors</Link>
           <ChevronRight className="w-4 h-4" />

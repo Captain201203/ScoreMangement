@@ -29,6 +29,23 @@ export class RoleRepository {
             { new: true }
         ).populate('claims').exec();
     }
+
+    async update(id: string, data: Partial<IRole>): Promise<IRole | null> {
+        return await RoleModel.findByIdAndUpdate(id, data, { new: true }).populate('claims').exec();
+    }
+
+    async delete(id: string): Promise<IRole | null> {
+        return await RoleModel.findByIdAndDelete(id).exec();
+    }
+
+    // Gỡ một claim ra khỏi mảng claims
+    async removeClaim(roleId: string, claimId: string): Promise<IRole | null> {
+        return await RoleModel.findByIdAndUpdate(
+            roleId,
+            { $pull: { claims: claimId } },
+            { new: true }
+        ).populate('claims').exec();
+    }
 }
 
 export const roleRepository = new RoleRepository();

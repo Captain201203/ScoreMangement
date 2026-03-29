@@ -1,6 +1,7 @@
-// src/Controllers/AccountController.ts
+
 import { Router, Request, Response } from "express";
 import { AccountService } from "../Service/AccountService.js";
+import { authorizeClaim, verifyToken } from "../middleware/authMiddleware.js";
 
 export class AccountController {
     public router: Router;
@@ -16,17 +17,20 @@ export class AccountController {
      * Định nghĩa tất cả các Route liên quan đến Account ngay tại đây
      */
     private initializeRoutes() {
-        // Cấu trúc: this.router.[method](path, handler)
-        this.router.get('/', (req, res) => this.getAll(req, res));
-        this.router.get('/:username', (req, res) => this.findByUsername(req, res));
-        
-        this.router.post('/', (req, res) => this.create(req, res));
-        this.router.post('/auto-student', (req, res) => this.createAutoAccountStudent(req, res));
-        this.router.post('/auto-admin', (req, res) => this.createAutoAccountAdmin(req, res));
-        this.router.post('/auto-teacher', (req, res) => this.createAutoAccountTeacher(req, res));
+        const auth = [verifyToken, authorizeClaim('account:manage')];
 
-        this.router.put('/:id', (req, res) => this.update(req, res));
-        this.router.delete('/:id', (req, res) => this.delete(req, res));
+        // 1. Các route tĩnh (Static) nên để lên đầu
+        this.router.get('/', ...auth, (req, res) => this.getAll(req, res));
+        this.router.post('/', ...auth, (req, res) => this.create(req, res));
+        this.router.post('/auto-student', ...auth, (req, res) => this.createAutoAccountStudent(req, res));
+        this.router.post('/auto-admin', ...auth, (req, res) => this.createAutoAccountAdmin(req, res));
+        this.router.post('/auto-teacher', ...auth, (req, res) => this.createAutoAccountTeacher(req, res));
+
+        // 2. Các route có tham số động (Dynamic) :id
+        // Đưa GET lên trước PUT/DELETE để ưu tiên việc truy vấn dữ liệu
+        this.router.get('/:id', ...auth, (req, res) => this.getById(req, res));
+        this.router.put('/:id', ...auth, (req, res) => this.update(req, res));
+        this.router.delete('/:id', ...auth, (req, res) => this.delete(req, res));
     }
 
     // --- Logic xử lý Request ---
@@ -35,6 +39,20 @@ export class AccountController {
         try {
             const accounts = await this.accountService.getAll();
             res.status(200).json(accounts);
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    private async getById(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            // Gọi service tìm theo accountId
+            const account = await this.accountService.findByAccountId(id); 
+            
+            account 
+                ? res.status(200).json(account) 
+                : res.status(404).json({ error: 'Không tìm thấy tài khoản' });
         } catch (error: any) {
             res.status(500).json({ error: error.message });
         }
@@ -57,7 +75,7 @@ export class AccountController {
             const account = await this.accountService.create(req.body);
             res.status(201).json(account);
         } catch (error: any) {
-            res.status(500).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
     }
 
@@ -95,10 +113,14 @@ export class AccountController {
 
     private async update(req: Request, res: Response) {
         try {
-            const account = await this.accountService.updateAccount(req.params.id, req.body);
-            account 
-                ? res.status(200).json(account) 
-                : res.status(404).json({ error: 'Account not found' });
+            const { id } = req.params; // id này lấy từ /:id
+            const account = await this.accountService.updateAccount(id, req.body);
+            
+            if (!account) {
+                return res.status(404).json({ error: 'Không tìm thấy tài khoản để cập nhật' });
+            }
+            
+            res.status(200).json(account);
         } catch (error: any) {
             res.status(500).json({ error: error.message });
         }

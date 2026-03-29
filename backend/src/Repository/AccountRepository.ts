@@ -26,8 +26,15 @@ export class AccountRepository {
     }
 
    
+// src/Repository/AccountRepository.ts
+
     async findByAccountId(accountId: string): Promise<IAccount | null> {
-        return await AccountModel.findOne({ accountId }).exec();
+        return await AccountModel.findOne({ accountId })
+            .populate({
+                path: 'role',
+                populate: { path: 'claims' }
+            })
+            .exec();
     }
 
   
@@ -38,7 +45,14 @@ export class AccountRepository {
 
    
     async update(accountId: string, data: UpdateQuery<IAccount>): Promise<IAccount | null> {
-        return await AccountModel.findOneAndUpdate({ accountId }, data, { new: true }).exec();
+        // 💡 Sử dụng { accountId } nếu bạn quản lý bằng mã định danh (MSSV/MSGV)
+        // Hoặc sử dụng findById nếu truyền vào _id từ MongoDB
+        return await AccountModel.findOneAndUpdate({ accountId }, data, { new: true })
+            .populate({
+                path: 'role',
+                populate: { path: 'claims' }
+            })
+            .exec();
     }
 
    

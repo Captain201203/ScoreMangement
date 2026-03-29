@@ -15,29 +15,48 @@ export class AccountService {
         return await accountRepository.findAll();
     }
 
+    async findByAccountId(accountId: string) {
+    // Gọi repository để tìm theo đúng field accountId trong DB
+        return await accountRepository.findByAccountId(accountId);
+    }
+
     async findByUsername(username: string) {
         return await accountRepository.findByUsername(username);
     }
 
-    async create(data: Partial<IAccount>) {
-        return await accountRepository.create(data);
-    }
+    async create(data: any) {
+            const { username, password, roleId, accountId } = data;
+            
+            // 1. Kiểm tra trùng lặp
+            const existing = await accountRepository.findByUsername(username);
+            if (existing) throw new Error("Email đã tồn tại trong hệ hệ thống.");
 
-    async createAutoAccount(email: string, id: string, type: 'admin' | 'teacher' | 'student') {
-        const existing = await accountRepository.findByUsername(email);
-        if (existing) return existing;
+            // 2. Hash mật khẩu (Dùng accountId làm pass mặc định nếu không có pass)
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password || accountId, salt);
 
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(id, salt);
-        const roleId = await this.getDefaultRoleId(type);
+            // 3. Tạo account với Role được chọn từ Frontend
+            return await accountRepository.create({
+                accountId,
+                username,
+                password: hashedPassword,
+                role: roleId // Gán trực tiếp ID Role từ giao diện Admin chọn
+            });
+        }
 
-        return await accountRepository.create({
-            accountId: id,
-            username: email,
-            password: hashedPassword,
-            role: roleId as any
-        });
-    }
+        // Logic auto-account cho các chức năng import hoặc tạo nhanh
+        async createAutoAccount(email: string, id: string, type: 'admin' | 'teacher' | 'student') {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(id, salt);
+            const roleId = await this.getDefaultRoleId(type);
+
+            return await accountRepository.create({
+                accountId: id,
+                username: email,
+                password: hashedPassword,
+                role: roleId as any
+            });
+        }
 
   
     async createAutoAccountStudent(email: string, mssv: string) {
