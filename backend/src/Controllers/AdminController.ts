@@ -1,4 +1,4 @@
-// src/Controllers/AdminController.ts
+
 import { Router, Request, Response } from "express";
 import { adminService } from "../Service/AdminService.js";
 import { accountService } from "../Service/AccountService.js";

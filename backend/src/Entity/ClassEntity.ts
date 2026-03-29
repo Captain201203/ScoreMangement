@@ -4,12 +4,13 @@ export interface IClass extends Document {
     classId: string;
     majorName: string;
     teacherName: string;
+    teacherId: string; // ✨ Thêm trường này để phân quyền chính xác
 }
 
 const ClassSchema: Schema = new Schema({
     classId: { type: String, required: true, unique: true },
     majorName: { type: String, required: true },
     teacherName: { type: String, required: true },
+    teacherId: { type: String, required: true }, // ✨ Lưu mã GV (ví dụ: GV001)
 });
-
 export default mongoose.models.Class || mongoose.model<IClass>('Class', ClassSchema);

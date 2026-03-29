@@ -1,4 +1,4 @@
-// src/Controllers/StudentController.ts
+
 import { Router, Request, Response } from "express";
 import { studentService } from "../Service/StudentService.js";
 import { accountService } from "../Service/AccountService.js";

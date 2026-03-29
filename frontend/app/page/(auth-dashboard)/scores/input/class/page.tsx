@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Loader2, Users, ChevronRight, ChevronLeft, GraduationCap } from "lucide-react"
 
-// 1. Thành phần chứa logic chính
+
 function ClassSelectionContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -23,7 +23,6 @@ function ClassSelectionContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Bảo vệ luồng dữ liệu
     if (!semester || !major || !subject) {
       router.push("/page/scores/input/semester")
       return
@@ -34,9 +33,26 @@ function ClassSelectionContent() {
   const loadClasses = async () => {
     try {
       setLoading(true)
+      
+      // 1. Lấy thông tin từ LocalStorage để biết ai đang đăng nhập
+      const userRole = localStorage.getItem("user_role");
+      const userAccountId = localStorage.getItem("student_session"); // Mã định danh GV (ví dụ: GV001)
+      const userClaims = JSON.parse(localStorage.getItem("user_claims") || "[]");
+
       const data = await classService.getAll()
-      // Đảm bảo dữ liệu là mảng
-      setClasses(Array.isArray(data) ? data : [])
+      const allData = Array.isArray(data) ? data : []
+
+      // 2. Logic hiển thị phía Client (để hỗ trợ UI mượt mà hơn)
+      // Nếu có quyền admin:all hoặc là Admin tối cao thì hiện tất cả
+      if (userClaims.includes("admin:all") || userRole === 'admin') {
+        setClasses(allData)
+      } else {
+        // Nếu là giảng viên thường, lọc lại một lần nữa cho chắc chắn trên UI
+        // Backend của bạn cũng đã lọc rồi, bước này giúp UI đồng nhất tuyệt đối
+        const myClasses = allData.filter(cls => cls.teacherId === userAccountId)
+        setClasses(myClasses)
+      }
+
     } catch (error) {
       console.error("Lỗi tải danh sách lớp:", error)
       setClasses([])
