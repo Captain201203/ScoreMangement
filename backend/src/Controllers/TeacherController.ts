@@ -13,11 +13,11 @@ export class TeacherController {
     }
 
     private initializeRoutes() {
-        // Mọi người đã đăng nhập có thể xem thông tin giảng viên
+    
         this.router.get("/", verifyToken, (req, res) => this.getAll(req, res));
         this.router.get("/:id", verifyToken, (req, res) => this.getById(req, res));
 
-        // Chỉ Admin mới có quyền quản lý nhân sự giảng viên
+   
         this.router.post("/", verifyToken, authorizeClaim('admin'), (req, res) => this.create(req, res));
         this.router.put("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.update(req, res));
         this.router.delete("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.delete(req, res));
@@ -45,10 +45,10 @@ export class TeacherController {
 
     private async create(req: Request, res: Response) {
         try {
-            // 1. Tạo giảng viên
+           
             const newTeacher = await teacherService.create(req.body);
 
-            // 2. Tự động tạo tài khoản cho giảng viên
+          
             if (newTeacher && newTeacher.teacherEmail && newTeacher.teacherId) {
                 await accountService.createAutoAccountTeacher(
                     newTeacher.teacherEmail, 

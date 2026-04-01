@@ -4,7 +4,7 @@ export interface IClass extends Document {
     classId: string;
     majorName: string;
     teacherName: string;
-    teacherId: string; // ✨ Thêm trường này để phân quyền chính xác
+    teacherId: string; 
 }
 
 const ClassSchema: Schema = new Schema({

@@ -7,16 +7,11 @@ export class ClassService {
     async getAll(user: any): Promise<IClass[]> {
         let filter = {};
 
-        // Kiểm tra quyền tối cao (admin:all hoặc roleType === 'admin')
         const isAdmin = user.claims?.includes('admin:all') || user.roleType === 'admin';
 
         if (!isAdmin) {
-            // Nếu không phải admin, ta lọc theo mã định danh của user đang đăng nhập
-            // user.id ở đây chính là accountId (ví dụ: 2280600163) được lấy từ Token
             filter = { teacherId: user.id }; 
             
-            // Hoặc nếu bạn chưa kịp thêm teacherId và muốn lọc tạm bằng tên (không khuyến khích):
-            // filter = { teacherName: user.username }; 
         }
 
         return await classRepository.findAll(filter);

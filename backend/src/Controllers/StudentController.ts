@@ -13,12 +13,12 @@ export class StudentController {
     }
 
     private initializeRoutes() {
-        // Mọi người đã đăng nhập có thể xem danh sách
+  
         this.router.get("/", verifyToken, (req, res) => this.getAll(req, res));
         this.router.get("/:id", verifyToken, (req, res) => this.getById(req, res));
         this.router.get("/by-class/:classId", verifyToken, (req, res) => this.getByClass(req, res));
 
-        // Chỉ Admin mới được Thêm/Sửa/Xóa sinh viên
+        
         this.router.post("/", verifyToken, authorizeClaim('admin'), (req, res) => this.create(req, res));
         this.router.put("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.update(req, res));
         this.router.delete("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.delete(req, res));

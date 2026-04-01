@@ -18,7 +18,7 @@ export const verifyToken = (req: AuthenticatedRequest, res: Response, next: Next
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "SECRET_KEY") as any;
         
-        // Lưu đầy đủ thông tin từ Claim-based Token vào req.user
+      
         req.user = {
             id: decoded.id,    
             roleType: decoded.roleType,
@@ -35,10 +35,10 @@ export const authorizeClaim = (requiredClaim: string) => {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
         if (!req.user) return res.status(401).json({ message: "Yêu cầu xác thực" });
 
-        // Admin luôn có mọi quyền
+       
         if (req.user.roleType === 'admin') return next();
 
-        // Kiểm tra xem mã quyền có nằm trong mảng claims của user không
+      
         const hasPermission = req.user.claims.includes(requiredClaim);
 
         if (!hasPermission) {
@@ -53,12 +53,12 @@ export const authorizeClaim = (requiredClaim: string) => {
 export const checkStudentOwnData = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) return res.status(401).json({ message: "Yêu cầu xác thực" });
 
-    // Admin hoặc Giảng viên có quyền 'score:view_all' thì cho qua
+    
     if (req.user.roleType === 'admin' || req.user.claims.includes('score:view_all')) {
         return next();
     }
 
-    // Nếu là sinh viên, kiểm tra ID
+  
     const queryStudentId = req.query.studentId as string;
     if (req.user.roleType === 'student' && queryStudentId !== req.user.id) {
         return res.status(403).json({ message: "Bạn không thể xem dữ liệu của sinh viên khác" });

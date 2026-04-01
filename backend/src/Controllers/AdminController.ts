@@ -32,7 +32,7 @@ export class AdminController {
         try {
             const newAdmin = await adminService.create(req.body);
 
-            // Tự động tạo tài khoản Account cho Admin mới
+         
             if (newAdmin && newAdmin.email && newAdmin.adminId) {
                 await accountService.createAutoAccountAdmin(
                     newAdmin.email, 
@@ -80,5 +80,5 @@ export class AdminController {
     }
 }
 
-// Export duy nhất instance của Controller
+
 export const adminController = new AdminController();

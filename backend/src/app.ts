@@ -46,6 +46,7 @@ app.use('/api/majors', majorController.router);
 app.use('/api/subjects', subjectController.router);
 app.use('/api/semesters', semesterController.router);
 app.use('/api/scores', scoreController.router);
+app.use('/uploads', express.static('uploads'));
 
 
 app.use('/api/roles', roleController.router);

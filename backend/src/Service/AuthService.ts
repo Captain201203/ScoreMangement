@@ -43,9 +43,9 @@ export class AuthService {
 
     return {
         token,
-        username: account.username, // Phẳng hóa dữ liệu ra ngoài cho dễ đọc
+        username: account.username, 
         roleType: roleData.roleType,
-        claims: claims, // <--- Đổi tên từ 'permissions' thành 'claims'
+        claims: claims, 
         user: {
             username: account.username,
             role: roleData.roleType,

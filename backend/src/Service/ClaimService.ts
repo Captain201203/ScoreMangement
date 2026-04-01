@@ -14,7 +14,7 @@ export class ClaimService {
         return await claimRepository.create(data);
     }
 
-    // MỚI: Cập nhật thông tin Claim
+  
     async update(id: string, data: Partial<IClaim>): Promise<IClaim | null> {
         if (data.slug) {
             const existing = await claimRepository.findBySlug(data.slug);
@@ -25,12 +25,12 @@ export class ClaimService {
         return await claimRepository.update(id, data);
     }
 
-    // MỚI: Xóa Claim và gỡ khỏi các Role liên quan
+  
     async delete(id: string): Promise<boolean> {
         const deletedClaim = await claimRepository.delete(id);
         if (!deletedClaim) throw new Error("Không tìm thấy quyền để xóa.");
 
-        // Logic quan trọng: Gỡ ID của claim này khỏi mảng claims của tất cả Roles
+      
         await RoleModel.updateMany(
             { claims: id },
             { $pull: { claims: id } }

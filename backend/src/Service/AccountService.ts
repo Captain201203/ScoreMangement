@@ -16,7 +16,7 @@ export class AccountService {
     }
 
     async findByAccountId(accountId: string) {
-    // Gọi repository để tìm theo đúng field accountId trong DB
+    
         return await accountRepository.findByAccountId(accountId);
     }
 
@@ -27,24 +27,24 @@ export class AccountService {
     async create(data: any) {
             const { username, password, roleId, accountId } = data;
             
-            // 1. Kiểm tra trùng lặp
+           
             const existing = await accountRepository.findByUsername(username);
             if (existing) throw new Error("Email đã tồn tại trong hệ hệ thống.");
 
-            // 2. Hash mật khẩu (Dùng accountId làm pass mặc định nếu không có pass)
+        
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password || accountId, salt);
 
-            // 3. Tạo account với Role được chọn từ Frontend
+          
             return await accountRepository.create({
                 accountId,
                 username,
                 password: hashedPassword,
-                role: roleId // Gán trực tiếp ID Role từ giao diện Admin chọn
+                role: roleId 
             });
         }
 
-        // Logic auto-account cho các chức năng import hoặc tạo nhanh
+       
         async createAutoAccount(email: string, id: string, type: 'admin' | 'teacher' | 'student') {
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(id, salt);

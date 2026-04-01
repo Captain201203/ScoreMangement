@@ -12,11 +12,11 @@ export class SemesterController {
     }
 
     private initializeRoutes() {
-        // Mọi người đã đăng nhập có thể xem danh sách học kỳ
+
         this.router.get("/", verifyToken, (req, res) => this.getAll(req, res));
         this.router.get("/:id", verifyToken, (req, res) => this.getById(req, res));
 
-        // Chỉ Admin mới được quản lý học kỳ
+    
         this.router.post("/", verifyToken, authorizeClaim('admin'), (req, res) => this.create(req, res));
         this.router.put("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.update(req, res));
         this.router.delete("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.delete(req, res));

@@ -19,13 +19,13 @@ export class RoleController {
         this.router.post("/", verifyToken, authorizeClaim('admin'), (req, res) => this.create(req, res));
         this.router.patch("/add-claim", verifyToken, authorizeClaim('admin'), (req, res) => this.addClaimToRole(req, res));
 
-        // Thêm Claim
+      
         this.router.patch("/add-claim", ...adminAuth, (req, res) => this.addClaimToRole(req, res));
         
-        // Gỡ Claim
+      
         this.router.patch("/remove-claim", ...adminAuth, (req, res) => this.removeClaimFromRole(req, res));
         
-        // Sửa/Xóa Role
+      
         this.router.patch("/:id", ...adminAuth, (req, res) => this.update(req, res));
         this.router.delete("/:id", ...adminAuth, (req, res) => this.delete(req, res));
     }
