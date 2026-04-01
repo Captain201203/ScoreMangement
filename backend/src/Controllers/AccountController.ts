@@ -13,9 +13,6 @@ export class AccountController {
         this.initializeRoutes();
     }
 
-    /**
-     * Định nghĩa tất cả các Route liên quan đến Account ngay tại đây
-     */
     private initializeRoutes() {
         const auth = [verifyToken, authorizeClaim('account:manage')];
 
@@ -26,14 +23,12 @@ export class AccountController {
         this.router.post('/auto-admin', ...auth, (req, res) => this.createAutoAccountAdmin(req, res));
         this.router.post('/auto-teacher', ...auth, (req, res) => this.createAutoAccountTeacher(req, res));
 
-        // 2. Các route có tham số động (Dynamic) :id
-        // Đưa GET lên trước PUT/DELETE để ưu tiên việc truy vấn dữ liệu
+    
         this.router.get('/:id', ...auth, (req, res) => this.getById(req, res));
         this.router.put('/:id', ...auth, (req, res) => this.update(req, res));
         this.router.delete('/:id', ...auth, (req, res) => this.delete(req, res));
     }
 
-    // --- Logic xử lý Request ---
 
     private async getAll(req: Request, res: Response) {
         try {
@@ -47,7 +42,7 @@ export class AccountController {
     private async getById(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            // Gọi service tìm theo accountId
+           
             const account = await this.accountService.findByAccountId(id); 
             
             account 
@@ -113,7 +108,7 @@ export class AccountController {
 
     private async update(req: Request, res: Response) {
         try {
-            const { id } = req.params; // id này lấy từ /:id
+            const { id } = req.params; 
             const account = await this.accountService.updateAccount(id, req.body);
             
             if (!account) {
@@ -138,5 +133,4 @@ export class AccountController {
     }
 }
 
-// Export instance của Controller (bao gồm cả router bên trong)
 export const accountController = new AccountController();

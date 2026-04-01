@@ -3,10 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import {
-  LayoutGrid, Users, GraduationCap, 
-  ChevronRight, Save, Loader2
-} from "lucide-react";
+import { ChevronRight, Save, Loader2, BookOpen, Users } from "lucide-react";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -18,100 +15,91 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 // Service & Types
 import { classService } from "@/app/service/class/service"; 
 import { IClass } from "@/app/types/class/type";
-import { accountService } from "@/app/service/account/service"; // 💡 Đổi sang dùng accountService
+import { accountService } from "@/app/service/account/service";
+import { majorService } from "@/app/service/major/service";
+import { IMajor } from "@/app/types/major/type";
 
-export default function ClassFormPage() {
+export default function ClassEditFormPage() {
   const router = useRouter();
   const params = useParams(); 
-  const classIdParam = params?.id as string; // _id từ MongoDB
+  const classIdParam = params?.id as string; // ID từ URL
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loadingData, setLoadingData] = useState(false);
-  const [teachers, setTeachers] = useState<any[]>([]); // Danh sách Account có role teacher
-  const [loadingTeachers, setLoadingTeachers] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(true);
+  
+  // Danh sách dữ liệu từ DB
+  const [teachers, setTeachers] = useState<any[]>([]);
+  const [majors, setMajors] = useState<IMajor[]>([]);
 
   const [formData, setFormData] = useState<IClass>({
     classId: "",
     majorName: "",
     teacherName: "",
-    teacherId: "", // ✨ Quan trọng: Phải lưu ID để phân quyền
+    teacherId: "",
   });
 
-  // 1. Load danh sách Giảng viên từ hệ thống Accounts
   useEffect(() => {
-    const fetchTeachers = async () => {
+    const fetchData = async () => {
       try {
-        setLoadingTeachers(true);
-        const data = await accountService.getAll();
-        // Lọc những tài khoản có vai trò là teacher
-        const teacherList = data.filter((acc: any) => 
+        setLoadingInitial(true);
+        
+        // 💡 Chạy song song: Giảng viên, Chuyên ngành và Chi tiết lớp học
+        const [accountData, majorData, classDetail] = await Promise.all([
+          accountService.getAll(),
+          majorService.getAll(),
+          classIdParam ? classService.getById(classIdParam) : Promise.resolve(null)
+        ]);
+
+        // 1. Xử lý danh sách giảng viên
+        const teacherList = accountData.filter((acc: any) => 
           acc.role?.roleType === 'teacher' || acc.role === 'teacher'
         );
         setTeachers(teacherList);
+
+        // 2. Xử lý danh sách chuyên ngành
+        setMajors(Array.isArray(majorData) ? majorData : []);
+
+        // 3. Điền dữ liệu cũ vào Form
+        if (classDetail) {
+          setFormData({
+            classId: classDetail.classId || "",
+            majorName: classDetail.majorName || "",
+            teacherName: classDetail.teacherName || "",
+            teacherId: classDetail.teacherId || "",
+          });
+        }
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách giảng viên:", error);
+        console.error("Lỗi khi tải dữ liệu:", error);
       } finally {
-        setLoadingTeachers(false);
+        setLoadingInitial(false);
       }
     };
-    fetchTeachers();
-  }, []);
 
-  // 2. Load dữ liệu cũ nếu là trang Edit
-  useEffect(() => {
-    if (classIdParam) {
-      const fetchDetail = async () => {
-        try {
-          setLoadingData(true);
-          const data = await classService.getById(classIdParam);
-          if (data) {
-            setFormData({
-              classId: data.classId || "",
-              majorName: data.majorName || "",
-              teacherName: data.teacherName || "",
-              teacherId: data.teacherId || "",
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching class detail:", error);
-        } finally {
-          setLoadingData(false);
-        }
-      };
-      fetchDetail();
-    }
+    fetchData();
   }, [classIdParam]);
 
   const handleChange = (field: keyof IClass, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // 3. Xử lý khi chọn Giảng viên từ Select
   const handleTeacherSelect = (teacherAccountId: string) => {
     const selectedTeacher = teachers.find(t => t.accountId === teacherAccountId);
     if (selectedTeacher) {
       setFormData(prev => ({
         ...prev,
-        teacherId: selectedTeacher.accountId, // Lưu mã định danh (Ví dụ: GV001)
-        teacherName: selectedTeacher.username // Lưu tên (Email/Họ tên) để hiển thị
+        teacherId: selectedTeacher.accountId,
+        teacherName: selectedTeacher.username
       }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.teacherId) return alert("Vui lòng chọn giảng viên phụ trách!");
-    
     setIsSubmitting(true);
     try {
-      if (classIdParam) {
-        await classService.update(classIdParam, formData);
-        alert("Cập nhật lớp học thành công!");
-      } else {
-        await classService.create(formData);
-        alert("Tạo lớp học mới thành công!");
-      }
-      router.push("/page/classes"); // Quay lại trang danh sách lớp
+      await classService.update(classIdParam, formData);
+      alert("Cập nhật thông tin lớp học thành công!");
+      router.push("/page/classes");
       router.refresh();
     } catch (error: any) {
       alert("Lỗi: " + (error.response?.data?.message || error.message));
@@ -120,10 +108,11 @@ export default function ClassFormPage() {
     }
   };
 
-  if (loadingData) {
+  if (loadingInitial) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="animate-spin text-teal-600 w-10 h-10" />
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50">
+        <Loader2 className="animate-spin text-teal-600 w-12 h-12 mb-4" />
+        <p className="text-slate-500 font-medium italic">Đang tải dữ liệu lớp học...</p>
       </div>
     );
   }
@@ -131,88 +120,99 @@ export default function ClassFormPage() {
   return (
     <div className="flex min-h-screen bg-gray-50 p-8 justify-center">
       <main className="w-full max-w-3xl">
+        {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm mb-6 text-muted-foreground">
-          <Link href="/page/class" className="hover:text-teal-600">Lớp học</Link>
+          <Link href="/page/classes" className="hover:text-teal-600">Lớp học</Link>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">
-            {classIdParam ? "Sửa lớp học" : "Thêm lớp học"}
-          </span>
+          <span className="text-gray-900 font-semibold italic">Chỉnh sửa thông tin</span>
         </nav>
 
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {classIdParam ? `Chỉnh sửa: ${formData.classId}` : "Tạo lớp học mới"}
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+            Cập nhật lớp: <span className="text-teal-600">{formData.classId}</span>
           </h1>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Card className="shadow-md">
-            <CardHeader className="bg-white border-b">
-              <CardTitle className="text-lg text-teal-700">Thông tin chi tiết</CardTitle>
+          <Card className="shadow-lg border-none">
+            <CardHeader className="bg-white border-b px-8 py-5">
+              <CardTitle className="text-lg flex items-center gap-2 text-teal-700 font-bold">
+                <BookOpen className="w-5 h-5" /> Thông tin chi tiết lớp học
+              </CardTitle>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="px-8 py-8 space-y-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. Mã lớp - Thường Edit sẽ không cho sửa mã lớp chính, nếu muốn cho sửa thì giữ nguyên */}
                 <div className="space-y-2">
-                  <Label className="font-semibold">Mã lớp học *</Label>
+                  <Label className="font-bold">Mã lớp học *</Label>
                   <Input
                     required
-                    placeholder="VD: DTH21-01"
                     value={formData.classId}
-                    onChange={(e) => handleChange("classId", e.target.value)}
-                    disabled={isSubmitting}
+                    onChange={(e) => handleChange("classId", e.target.value.toUpperCase())}
+                    className="h-11 focus:ring-teal-500 border-slate-200"
                   />
                 </div>
+
+                {/* 2. Chuyên ngành Dropdown */}
                 <div className="space-y-2">
-                  <Label className="font-semibold">Chuyên ngành *</Label>
-                  <Input
-                    required
-                    placeholder="VD: Công nghệ thông tin"
+                  <Label className="font-bold">Chuyên ngành *</Label>
+                  <Select
                     value={formData.majorName}
-                    onChange={(e) => handleChange("majorName", e.target.value)}
-                    disabled={isSubmitting}
-                  />
+                    onValueChange={(val) => handleChange("majorName", val)}
+                  >
+                    <SelectTrigger className="h-11 border-slate-200">
+                      <SelectValue placeholder="Chọn chuyên ngành" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {majors.map((m: any) => (
+                        <SelectItem key={m._id || m.majorName} value={m.majorName}>
+                          {m.majorName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {/* 💡 Ô Select Giảng viên: Tự động gán cả Tên và ID */}
-              <div className="space-y-2">
-                <Label className="font-semibold text-teal-700">Giảng viên hướng dẫn *</Label>
+              {/* 3. Giảng viên hướng dẫn Dropdown */}
+              <div className="space-y-3 pt-4">
+                <Label className="font-bold flex items-center gap-2">
+                  <Users className="w-4 h-4 text-teal-600" /> Giảng viên hướng dẫn *
+                </Label>
                 <Select
-                  value={formData.teacherId} // Dùng ID làm giá trị nhận diện
+                  value={formData.teacherId}
                   onValueChange={handleTeacherSelect}
-                  disabled={isSubmitting || loadingTeachers}
                 >
-                  <SelectTrigger className="border-teal-200 focus:ring-teal-500">
-                    <SelectValue placeholder={loadingTeachers ? "Đang tải dữ liệu..." : "Chọn giảng viên phụ trách lớp"} />
+                  <SelectTrigger className="h-11 border-teal-200 bg-teal-50/20">
+                    <SelectValue placeholder="Chọn giảng viên" />
                   </SelectTrigger>
                   <SelectContent>
-                    {teachers.length > 0 ? (
-                      teachers.map((t) => (
-                        <SelectItem key={t.accountId} value={t.accountId}>
-                          {t.username} ({t.accountId})
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem disabled value="none">Không có dữ liệu giảng viên</SelectItem>
-                    )}
+                    {teachers.map((t) => (
+                      <SelectItem key={t.accountId} value={t.accountId}>
+                        {t.username} ({t.accountId})
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                {formData.teacherName && (
-                  <p className="text-[11px] text-teal-600 font-medium italic">
-                    Đã chọn: {formData.teacherName} (Mã: {formData.teacherId})
-                  </p>
-                )}
+                <p className="text-xs text-teal-600 font-medium">
+                   Giảng viên hiện tại: {formData.teacherName}
+                </p>
               </div>
+
             </CardContent>
           </Card>
 
-          <div className="flex items-center justify-end gap-4 border-t pt-6">
-            <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
+          <div className="flex items-center justify-end gap-4">
+            <Button type="button" variant="outline" className="h-11 px-6" onClick={() => router.back()}>
               Hủy bỏ
             </Button>
-            <Button type="submit" className="bg-teal-600 hover:bg-teal-700 min-w-[150px]" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              {classIdParam ? "Cập nhật" : "Lưu lớp học"}
+            <Button type="submit" className="h-11 px-10 bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/20" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang lưu...</>
+              ) : (
+                <><Save className="mr-2 h-4 w-4" /> Lưu thay đổi</>
+              )}
             </Button>
           </div>
         </form>

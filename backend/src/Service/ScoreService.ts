@@ -25,22 +25,22 @@ export class ScoreService {
 
         let score = await scoreRepository.findOne({ studentId, subjectId, semester });
 
-        // TẠO OBJECT DỮ LIỆU SẠCH
+     
         const cleanData = {
-            ...data, // Lấy các điểm số từ client gửi lên
+            ...data,
             studentId,
             subjectId,
             semester,
-            // ÉP BUỘC LẤY TỪ DATABASE CỦA STUDENT VÀ SUBJECT
+         
             className: (student.className || "").toString().trim(),
             subjectName: subject.subjectName.trim()
         };
 
         if (score) {
-            // Cập nhật bản ghi cũ
+           
             return await scoreRepository.update(score._id as string, cleanData) as IScore;
         } else {
-            // Tạo bản ghi mới hoàn toàn
+           
             return await scoreRepository.create(cleanData);
         }
     }

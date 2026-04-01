@@ -28,7 +28,7 @@ export class RoleService {
         const role = await roleRepository.findById(id);
         if (!role) throw new Error("Role không tồn tại.");
         
-        // Bảo vệ vai trò quản trị tối cao
+     
         if (role.roleType === 'admin') {
             throw new Error("Không thể xóa vai trò Quản trị viên hệ thống.");
         }

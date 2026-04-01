@@ -12,12 +12,12 @@ export class ClassController {
     }
 
     private initializeRoutes() {
-        // Áp dụng verifyToken cho tất cả các route của Class
+        
         this.router.get("/", verifyToken, (req, res) => this.getAll(req, res));
         this.router.get("/:id", verifyToken, (req, res) => this.getById(req, res));
         this.router.get("/count/:classId", verifyToken, (req, res) => this.countStudents(req, res));
         
-        // Các thao tác thay đổi dữ liệu yêu cầu quyền Admin
+       
         this.router.post("/", verifyToken, authorizeClaim('admin'), (req, res) => this.create(req, res));
         this.router.put("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.update(req, res));
         this.router.delete("/:id", verifyToken, authorizeClaim('admin'), (req, res) => this.delete(req, res));
@@ -26,10 +26,9 @@ export class ClassController {
 
     private async getAll(req: Request, res: Response) {
         try {
-            // Lấy thông tin user từ req (do verifyToken cung cấp)
+          
             const user = (req as any).user; 
 
-            // Truyền user xuống service để thực hiện logic lọc
             const classes = await classService.getAll(user);
             
             res.status(200).json(classes);
