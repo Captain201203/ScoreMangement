@@ -1,4 +1,3 @@
-// src/app/service/document/service.ts
 import axios from "axios";
 import { IDocument } from "../../types/document/type";
 
